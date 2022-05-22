@@ -1,0 +1,18 @@
+.back-to-home{
+    @apply w-auto flex items-center transition-all duration-700 hover:cursor-pointer;
+    width: 60px
+}
+.back-to-home p{
+    transition:none;
+    height: 30px;
+    opacity: 0;
+    overflow: hidden;
+}
+.back-to-home:hover{
+    @apply w-[200px];
+}
+.back-to-home:hover p{
+    opacity: 100;
+    -webkit-transition: opacity 2s, height 2s ease 2s;
+    transition: opacity 2s, height 2s ease 2s;
+}
