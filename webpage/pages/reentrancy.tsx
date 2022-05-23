@@ -4,7 +4,8 @@ import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import ContractBalanceCard from '../components/ContractBalanceCard'
 import ReentrancyAttacker from '../components/ReentrancyAttacker'
-import abi from "../contracts/abi.json";
+import abi_atk from "../contracts/abi-reentrancy-atk.json";
+import abi_vuln from "../contracts/abi-reentrancy-vuln.json";
 
 type Props = {}
 
@@ -19,16 +20,23 @@ function reentrancy({}: Props) {
     fetchAttackerBalance();
   }, []);
 
-  let contract: any;
+  let contract_vuln: any;
+  let contract_att: any;
   let provider: ethers.providers.Web3Provider;
 
   const initContract = async () => {
     if (window.ethereum) {
       provider = new ethers.providers.Web3Provider(window.ethereum);
 
-      contract = new ethers.Contract(
+      contract_vuln = new ethers.Contract(
         "0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1",
-        abi,
+        abi_vuln,
+        provider.getSigner()
+      );
+
+      contract_att = new ethers.Contract(
+        "0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7",
+        abi_atk,
         provider.getSigner()
       );
     }
@@ -40,6 +48,14 @@ function reentrancy({}: Props) {
 
   const fetchAttackerBalance = async () => {
     setAttackerBalance((await provider.getBalance("0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7")).toNumber())
+  }
+
+  const topUpVulnContract = async () => {
+    const tx = await contract_vuln.deposit({ value: 2000 });
+    console.log("tx", tx);
+
+    //txHash.value = tx.hash
+    await tx.wait();
   }
 
   return (
@@ -59,7 +75,7 @@ function reentrancy({}: Props) {
         </Text>
         <Container className='grid grid-cols-1 md:grid-cols-2' style={{height: '-webkit-fill-available'}}>
             <div className='flex items-center'>
-                <ContractBalanceCard balance={contractBalance} />
+                <ContractBalanceCard balance={contractBalance} topup={topUpVulnContract} />
             </div>
             <div className='flex items-center'>
                 <ReentrancyAttacker balance={attackerBalance} />
