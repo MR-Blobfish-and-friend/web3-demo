@@ -73,7 +73,7 @@ const Home: NextPage = () => {
         >
           Reentrancy
         </Text>
-        <button onClick={deposit}>TESTME</button>
+        
       </div>
     </div>
   );
