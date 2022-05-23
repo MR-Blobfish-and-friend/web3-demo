@@ -1,5 +1,5 @@
 import { Container, Text } from '@nextui-org/react'
-import { ethers, utils } from 'ethers'
+import { Contract, ethers, utils } from 'ethers'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import ContractBalanceCard from '../components/ContractBalanceCard'
@@ -13,6 +13,9 @@ function reentrancy({}: Props) {
   const router = useRouter();
   const [attackerBalance, setAttackerBalance] = useState(0);
   const [contractBalance, setContractBalance] = useState(0);
+  const [contractVuln, setContractVuln] = useState<Contract>();
+  const [contractAtt, setContractAtt] = useState<Contract>();
+  const [isInitSuccess, setIsInitSuccess] = useState(false);
 
   useEffect(() => {
     initContract();
@@ -20,25 +23,35 @@ function reentrancy({}: Props) {
     fetchAttackerBalance();
   }, []);
 
-  let contract_vuln: any;
-  let contract_att: any;
+  let contract_att: Contract;
   let provider: ethers.providers.Web3Provider;
 
   const initContract = async () => {
     if (window.ethereum) {
       provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
 
-      contract_vuln = new ethers.Contract(
-        "0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1",
-        abi_vuln,
-        provider.getSigner()
-      );
+      setContractVuln(
+        new ethers.Contract(
+          "0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1",
+          abi_vuln,
+          provider.getSigner()
+        )
+      )
 
-      contract_att = new ethers.Contract(
-        "0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7",
-        abi_atk,
-        provider.getSigner()
-      );
+      setContractAtt(
+        new ethers.Contract(
+          "0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7",
+          abi_atk,
+          provider.getSigner()
+        )
+      )
+
+      // update init state
+      setIsInitSuccess(true)
+    }
+    else{
+      console.log('Window.ethereum not found: ', window.ethereum)
     }
   };
 
@@ -51,11 +64,21 @@ function reentrancy({}: Props) {
   }
 
   const topUpVulnContract = async () => {
-    const tx = await contract_vuln.deposit({ value: 2000 });
-    console.log("tx", tx);
+    console.log(contractVuln)
+    if(contractVuln !== undefined){
+      const tx = await contractVuln.deposit({ value: 2000 });
+      //txHash.value = tx.hash
+      await tx.wait();
+    }
+  }
 
-    //txHash.value = tx.hash
-    await tx.wait();
+  const attack = async () => {
+    console.log(contractAtt)
+    if(contractAtt !== undefined){
+      const tx = await contractAtt.attack();
+      //txHash.value = tx.hash
+      await tx.wait();
+    }
   }
 
   return (
@@ -75,10 +98,10 @@ function reentrancy({}: Props) {
         </Text>
         <Container className='grid grid-cols-1 md:grid-cols-2' style={{height: '-webkit-fill-available'}}>
             <div className='flex items-center'>
-                <ContractBalanceCard balance={contractBalance} topup={topUpVulnContract} />
+                <ContractBalanceCard balance={contractBalance} topup={topUpVulnContract} isInitSuccess={isInitSuccess}/>
             </div>
             <div className='flex items-center'>
-                <ReentrancyAttacker balance={attackerBalance} />
+                <ReentrancyAttacker balance={attackerBalance} isInitSuccess={isInitSuccess} attack={attack}/>
             </div>
         </Container>
       </div>
