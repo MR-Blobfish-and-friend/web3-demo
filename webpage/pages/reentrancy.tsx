@@ -1,14 +1,47 @@
 import { Container, Text } from '@nextui-org/react'
+import { ethers, utils } from 'ethers'
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ContractBalanceCard from '../components/ContractBalanceCard'
 import ReentrancyAttacker from '../components/ReentrancyAttacker'
+import abi from "../contracts/abi.json";
 
 type Props = {}
 
 function reentrancy({}: Props) {
   const router = useRouter();
-  
+  const [attackerBalance, setAttackerBalance] = useState(0);
+  const [contractBalance, setContractBalance] = useState(0);
+
+  useEffect(() => {
+    initContract();
+    fetchContractBalance();
+    fetchAttackerBalance();
+  }, []);
+
+  let contract: any;
+  let provider: ethers.providers.Web3Provider;
+
+  const initContract = async () => {
+    if (window.ethereum) {
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      contract = new ethers.Contract(
+        "0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1",
+        abi,
+        provider.getSigner()
+      );
+    }
+  };
+
+  const fetchContractBalance = async () => {
+    setContractBalance((await provider.getBalance("0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1")).toNumber())
+  }
+
+  const fetchAttackerBalance = async () => {
+    setAttackerBalance((await provider.getBalance("0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7")).toNumber())
+  }
+
   return (
     <div className='flex h-screen'>
       <div onClick={() => {router.push('/')}} className='back-to-home bg-[#9BDF46]'>
@@ -26,10 +59,10 @@ function reentrancy({}: Props) {
         </Text>
         <Container className='grid grid-cols-1 md:grid-cols-2' style={{height: '-webkit-fill-available'}}>
             <div className='flex items-center'>
-                <ContractBalanceCard />
+                <ContractBalanceCard balance={contractBalance} />
             </div>
             <div className='flex items-center'>
-                <ReentrancyAttacker />
+                <ReentrancyAttacker balance={attackerBalance} />
             </div>
         </Container>
       </div>
