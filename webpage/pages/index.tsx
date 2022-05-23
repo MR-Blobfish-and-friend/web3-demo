@@ -1,14 +1,57 @@
-import type { NextPage } from 'next'
+import type { NextPage } from "next";
 import { Text } from "@nextui-org/react";
-import { useRouter } from 'next/router';
-const Home: NextPage = () => {
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
+import { ethers, utils } from "ethers";
+
+import abi from "../contracts/abi.json";
+const Home: NextPage = () => {
   // router
-  const router = useRouter()
-  
+  const router = useRouter();
+
+  useEffect(() => {
+    initContract();
+  }, []);
+
+  let contract: any;
+  const initContract = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const account = await provider.getSigner().getAddress();
+
+      contract = new ethers.Contract(
+        "0x07dE81c28f0E2ab03e02719B46DE527AEDA1C997",
+        abi,
+        provider.getSigner()
+      );
+
+      // console.log("Name", await contract.name());
+      console.log("receiver", await contract.balance);
+
+      // contractName.value = await contract.name()
+      // balance.value = utils.formatEther(await contract.balance())
+      // myBalance.value = utils.formatEther(await contract.balances(account))
+    }
+
+    const deposit = async () => {
+      const tx = await contract.deposit({ value: 1000 });
+      console.log("tx", tx);
+
+      //txHash.value = tx.hash
+      await tx.wait();
+      console.log("balance", await contract.balance);
+      console.log("balance", await contract);
+      // window.location.reload()
+    };
+  };
+
   return (
-    <div className='flex md:flex-row flex-col w-screen h-screen'>
-      <div onClick={() => router.push('/overflow')} className='bg-[#251D3A] homepage-card'>
+    <div className="flex flex-col w-screen h-screen md:flex-row">
+      <div
+        onClick={() => router.push("/overflow")}
+        className="bg-[#251D3A] homepage-card"
+      >
         <Text
           h1
           size={60}
@@ -21,7 +64,10 @@ const Home: NextPage = () => {
           Integer Overflow/Underflow
         </Text>
       </div>
-      <div onClick={() => router.push('/reentrancy')} className='bg-[#346473] homepage-card'>
+      <div
+        onClick={() => router.push("/reentrancy")}
+        className="bg-[#346473] homepage-card"
+      >
         <Text
           h1
           size={60}
@@ -29,13 +75,14 @@ const Home: NextPage = () => {
             textGradient: "45deg, #9BDF46 , #EAEFC4 50%",
           }}
           weight="bold"
-          className='mx-auto'
+          className="mx-auto"
         >
           Reentrancy
         </Text>
+        <button onClick={deposit}>TESTME</button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
