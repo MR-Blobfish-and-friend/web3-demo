@@ -16,7 +16,7 @@ const Home: NextPage = () => {
 
   let contract: any;
   const initContract = async () => {
-    if (typeof window.ethereum !== "undefined") {
+    if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const account = await provider.getSigner().getAddress();
 
@@ -25,25 +25,19 @@ const Home: NextPage = () => {
         abi,
         provider.getSigner()
       );
-
-      // console.log("Name", await contract.name());
       console.log("receiver", await contract.balance);
-
-      // contractName.value = await contract.name()
-      // balance.value = utils.formatEther(await contract.balance())
-      // myBalance.value = utils.formatEther(await contract.balances(account))
     }
+  };
 
-    const deposit = async () => {
-      const tx = await contract.deposit({ value: 1000 });
-      console.log("tx", tx);
+  const deposit = async () => {
+    const tx = await contract.deposit({ value: 1000 });
+    console.log("tx", tx);
 
-      //txHash.value = tx.hash
-      await tx.wait();
-      console.log("balance", await contract.balance);
-      console.log("balance", await contract);
-      // window.location.reload()
-    };
+    //txHash.value = tx.hash
+    await tx.wait();
+    console.log("balance", await contract.balance);
+    console.log("balance", await contract);
+    // window.location.reload()
   };
 
   return (
