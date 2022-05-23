@@ -3,19 +3,21 @@ import { Card, Text } from "@nextui-org/react";
 import { Button } from "@nextui-org/react";
 
 type Props = {
-  balance: number
+  balance: number,
+  attack: any,
+  isInitSuccess: boolean
 }
 
-function ContractBalanceCard({balance}: Props) {
+function ContractBalanceCard({balance, attack, isInitSuccess}: Props) {
   return (
     <Card className="md:w-auto w-full bg-[#EAEFC4] p-5 w-fit mx-auto">
       <Text h3 weight="bold" size={20} transform="uppercase" color="#346473aa" className='text-center'>
         Balance in Attacker wallet
       </Text>
       <Text h2 weight="extrabold" size={40} color="#346473" className='text-center'>
-          {balance} ETH
+          {balance} Wei
       </Text>
-      <Button className='bg-[#25A55F]'>Attack</Button>
+      <Button className='bg-[#25A55F]' onClick={() => attack()} disabled={!isInitSuccess}>Attack</Button>
     </Card>
   )
 }
