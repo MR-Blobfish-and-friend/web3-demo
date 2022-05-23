@@ -3,6 +3,7 @@ import { Contract, ethers, utils } from 'ethers'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import ContractBalanceCard from '../components/ContractBalanceCard'
+import Loader from '../components/Loader'
 import ReentrancyAttacker from '../components/ReentrancyAttacker'
 import abi_atk from "../contracts/abi-reentrancy-atk.json";
 import abi_vuln from "../contracts/abi-reentrancy-vuln.json";
@@ -15,74 +16,108 @@ function reentrancy({}: Props) {
   const [contractBalance, setContractBalance] = useState(0);
   const [contractVuln, setContractVuln] = useState<Contract>();
   const [contractAtt, setContractAtt] = useState<Contract>();
+  const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
   const [isInitSuccess, setIsInitSuccess] = useState(false);
+  const [isProcess, setIsProcess] = useState(false);
 
   useEffect(() => {
     initContract();
+  }, []);
+  useEffect(() => {
     fetchContractBalance();
     fetchAttackerBalance();
-  }, []);
+  }, [provider])
 
   let contract_att: Contract;
-  let provider: ethers.providers.Web3Provider;
 
   const initContract = async () => {
     if (window.ethereum) {
-      provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
+      let temp_provider = new ethers.providers.Web3Provider(window.ethereum);
+      await temp_provider.send("eth_requestAccounts", []);
 
-      setContractVuln(
-        new ethers.Contract(
-          "0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1",
-          abi_vuln,
-          provider.getSigner()
+      if(process.env.NEXT_PUBLIC_VUL_CONTRACT_ADDR){
+        setContractVuln(
+          new ethers.Contract(
+            process.env.NEXT_PUBLIC_VUL_CONTRACT_ADDR,
+            abi_vuln,
+            temp_provider.getSigner()
+          )
         )
-      )
+      }
 
-      setContractAtt(
-        new ethers.Contract(
-          "0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7",
-          abi_atk,
-          provider.getSigner()
+      if(process.env.NEXT_PUBLIC_ATTACKER_CONTRACT_ADDR){
+        setContractAtt(
+          new ethers.Contract(
+            process.env.NEXT_PUBLIC_ATTACKER_CONTRACT_ADDR,
+            abi_atk,
+            temp_provider.getSigner()
+          )
         )
-      )
+      }
 
       // update init state
-      setIsInitSuccess(true)
+      setProvider(temp_provider);
+      setIsInitSuccess(true);
     }
     else{
-      console.log('Window.ethereum not found: ', window.ethereum)
+      console.log('Window.ethereum not found')
     }
   };
 
   const fetchContractBalance = async () => {
-    setContractBalance((await provider.getBalance("0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1")).toNumber())
+    if(provider !== undefined && process.env.NEXT_PUBLIC_VUL_CONTRACT_ADDR !== undefined){
+      setContractBalance((await provider.getBalance(process.env.NEXT_PUBLIC_VUL_CONTRACT_ADDR)).toNumber())
+    }
   }
 
   const fetchAttackerBalance = async () => {
-    setAttackerBalance((await provider.getBalance("0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7")).toNumber())
+    if(provider !== undefined && process.env.NEXT_PUBLIC_ATTACKER_CONTRACT_ADDR !== undefined){
+      setAttackerBalance((await provider.getBalance(process.env.NEXT_PUBLIC_ATTACKER_CONTRACT_ADDR)).toNumber())
+    }
   }
 
   const topUpVulnContract = async () => {
-    console.log(contractVuln)
-    if(contractVuln !== undefined){
-      const tx = await contractVuln.deposit({ value: 2000 });
-      //txHash.value = tx.hash
-      await tx.wait();
+    try{
+      if(contractVuln !== undefined){
+        setIsProcess(true)
+        const tx = await contractVuln.deposit({ value: 2000 });
+        //txHash.value = tx.hash
+        await tx.wait();
+        await fetchContractBalance();
+        await fetchAttackerBalance();
+        setIsProcess(false)
+      }
+    }
+    catch(e){
+      setIsProcess(false)
+      throw(e);
     }
   }
 
   const attack = async () => {
-    console.log(contractAtt)
-    if(contractAtt !== undefined){
-      const tx = await contractAtt.attack();
-      //txHash.value = tx.hash
-      await tx.wait();
+    try{
+      if(contractAtt !== undefined){
+        setIsProcess(true)
+        const tx = await contractAtt.attack({value: 4000, gasLimit: 300000});
+        //txHash.value = tx.hash
+        await tx.wait();
+        await fetchContractBalance();
+        await fetchAttackerBalance();
+        setIsProcess(false)
+      }
+    }
+    catch(e){
+      setIsProcess(false)
+      throw(e);
     }
   }
 
   return (
     <div className='flex h-screen'>
+      {
+        isProcess? <Loader /> : <></>
+      }
+
       <div onClick={() => {router.push('/')}} className='back-to-home bg-[#9BDF46]'>
         <div className='mx-auto text-[#346473]'>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
