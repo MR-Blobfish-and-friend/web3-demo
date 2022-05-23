@@ -14,6 +14,7 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
+  /* Full Deploy
   const ReentrancyVuln = await hre.ethers.getContractFactory("ReentrancyVuln");
   const reentrancyVuln = await ReentrancyVuln.deploy();
 
@@ -24,6 +25,11 @@ async function main() {
   const ReentrancyAttack = await hre.ethers.getContractFactory("ReentrancyAttack");
   const reentrancyAttack = await ReentrancyAttack.deploy(reentrancyVuln.address);
 
+  await reentrancyAttack.deployed();
+  console.log("reentrancy atk deployed to:", reentrancyAttack.address); */
+
+  const ReentrancyAttack = await hre.ethers.getContractFactory("ReentrancyAttack");
+  const reentrancyAttack = await ReentrancyAttack.deploy("0xf3E0e3f53c313bA17529C617B61C826d71dEE2A1");
   await reentrancyAttack.deployed();
   console.log("reentrancy atk deployed to:", reentrancyAttack.address);
 }

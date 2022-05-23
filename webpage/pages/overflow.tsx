@@ -1,15 +1,47 @@
 import { Container, Text } from '@nextui-org/react'
 import { useRouter } from 'next/router'
-import React from 'react'
+import { useEffect } from 'react'
 import OverflowUser from '../components/OverflowUser'
 import ReentrancyAttacker from '../components/ReentrancyAttacker'
 import StateInContractCard from '../components/StateInContractCard'
+import { ethers, utils } from "ethers";
+import abi from "../contracts/abi.json";
 
 type Props = {}
 
 function overflow({}: Props) {
   const router = useRouter();
   
+  useEffect(() => {
+    initContract();
+  }, []);
+
+  let contract: any;
+  const initContract = async () => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const account = await provider.getSigner().getAddress();
+
+      contract = new ethers.Contract(
+        "0x07dE81c28f0E2ab03e02719B46DE527AEDA1C997",
+        abi,
+        provider.getSigner()
+      );
+      console.log("receiver", await contract.balance);
+    }
+  };
+
+  const deposit = async () => {
+    const tx = await contract.deposit({ value: 1000 });
+    console.log("tx", tx);
+
+    //txHash.value = tx.hash
+    await tx.wait();
+    console.log("balance", await contract.balance);
+    console.log("balance", await contract);
+    // window.location.reload()
+  };
+
   return (
     <div className='flex h-screen'>
       <div onClick={() => {router.push('/')}} className='back-to-home bg-[#2A2550]'>
