@@ -50,6 +50,14 @@ function reentrancy({}: Props) {
     setAttackerBalance((await provider.getBalance("0xC0e1992B2A86DEbaFa9aae4978e6316292D666a7")).toNumber())
   }
 
+  const topUpVulnContract = async () => {
+    const tx = await contract_vuln.deposit({ value: 2000 });
+    console.log("tx", tx);
+
+    //txHash.value = tx.hash
+    await tx.wait();
+  }
+
   return (
     <div className='flex h-screen'>
       <div onClick={() => {router.push('/')}} className='back-to-home bg-[#9BDF46]'>
@@ -67,7 +75,7 @@ function reentrancy({}: Props) {
         </Text>
         <Container className='grid grid-cols-1 md:grid-cols-2' style={{height: '-webkit-fill-available'}}>
             <div className='flex items-center'>
-                <ContractBalanceCard balance={contractBalance} />
+                <ContractBalanceCard balance={contractBalance} topup={topUpVulnContract} />
             </div>
             <div className='flex items-center'>
                 <ReentrancyAttacker balance={attackerBalance} />
