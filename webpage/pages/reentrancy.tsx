@@ -127,7 +127,7 @@ function reentrancy({}: Props) {
           <Text weight="bold" color='#346473'>Back to home</Text>
         </div>
       </div>
-      <div className='bg-[#346473] w-full h-screen overflow-y-hidden'>
+      <div className='bg-[#346473] w-full h-screen overflow-y-hidden ml-[60px]'>
         <Text h1 weight="bold" size={46} transform="uppercase" color="#EAEFC4" className='text-center'>
           Reentrancy
         </Text>

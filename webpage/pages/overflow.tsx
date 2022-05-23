@@ -114,7 +114,7 @@ function overflow({}: Props) {
           <Text weight="bold" color='#E04D01'>Back to home</Text>
         </div>
       </div>
-      <div className='bg-[#251D3A] w-full h-screen overflow-y-hidden'>
+      <div className='bg-[#251D3A] w-full h-screen overflow-y-hidden ml-[60px'>
         <Text h1 weight="bold" size={46} transform="uppercase" color="#EAEFC4" className='text-center'>
           Integer Overflow / Underflow
         </Text>

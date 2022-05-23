@@ -1,5 +1,6 @@
 .back-to-home{
-    @apply w-auto flex items-center transition-all duration-700 hover:cursor-pointer;
+    @apply w-auto flex items-center transition-all duration-700 hover:cursor-pointer absolute h-screen;
+    z-index: 201;
     width: 60px
 }
 .back-to-home p{
