@@ -28,8 +28,6 @@ function reentrancy({}: Props) {
     fetchAttackerBalance();
   }, [provider])
 
-  let contract_att: Contract;
-
   const initContract = async () => {
     if (window.ethereum) {
       let temp_provider = new ethers.providers.Web3Provider(window.ethereum);
