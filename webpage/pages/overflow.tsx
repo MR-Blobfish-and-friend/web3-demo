@@ -22,6 +22,7 @@ function overflow({}: Props) {
   const [amount, setAmount] = useState<number>(0);
   const [expectedAmount, setExpectedAmount] = useState<number>(0);
   const [isProcess, setIsProcess] = useState<boolean>(false);
+  const [sender, setSender] = useState<any>('');
   
   useEffect(() => {
     initContract();
@@ -42,23 +43,27 @@ function overflow({}: Props) {
 
       const tempBaraSender = await cont.balances(account)
       setSenderBalance(tempBaraSender.toNumber());
+      console.log(tempBaraSender.toNumber());
 
       const tempBaraReceiver = await cont.balances("0x3D4C1dC19fFAC9D07A541b6F01B1d0Cd150C1626")
       setReceiverBalance(tempBaraReceiver.toNumber());
       
       setContract(cont as any);
+      setSender(account);
     }
   };
 
   const deposit = async () => {
-    const tx = await contract.deposit({ value: 1000 });
-    console.log("tx", tx);
+    if (contract) {
+      const tx = await contract.deposit({ value: 176 });
+      console.log("tx", tx);
 
-    //txHash.value = tx.hash
-    await tx.wait();
-    console.log("balance", await contract.balance);
-    console.log("balance", await contract);
-    // window.location.reload()
+      //txHash.value = tx.hash
+      await tx.wait();
+      console.log("balance", await contract.balance);
+      console.log("balance", await contract);
+      // window.location.reload()
+    }
   };
 
   const getReceiverBalance = async () => {
@@ -86,6 +91,9 @@ function overflow({}: Props) {
     getActualAmount();
     calculateAmount();
     console.log("return amount", amount);
+    const tempBaraSender = await contract.balances(sender);
+    setSenderBalance(tempBaraSender.toNumber());
+    getReceiverBalance();
     setIsProcess(false);
   }
 
@@ -126,8 +134,6 @@ function overflow({}: Props) {
                 <OverflowUser transferInput={transferInput} onInputChange={onChangeTransferInput} onTransfer={() => {batchTransfer(transferInput.cnt, transferInput._value)}} balance={senderBalance}/>
             </div>
             <button onClick={deposit} >TEST DEPOSIT</button>
-            <button onClick={getReceiverBalance} >TEST RECEIVER</button>
-            <button onClick={getSenderBalance} >TEST SENDER</button>
         </Container>
       </div>
     </div>
